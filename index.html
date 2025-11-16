@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Rain Soundscape Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.21"></script>
+  <style>
+    body 
+    {
+        font-family: sans-serif;
+        margin: 30px;
+        background-color: #000011;
+        color: #cceeff;
+        text-align: center;
+    }
+    .lil-gui 
+    {
+        --width: 300px;
+        --widget-height: 32px;
+        --font-size: 14px;
+        --input-font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <br><br><br><br><br><br><br><br><br><br><br><br>
+  <h1>Rain Soundscape Generator</h1>
+  <p>Use the panel above to control volumes and playback.</p>
+
+<script>
+const tracks = [];
+
+function createTrack(fileName, startValue) 
+{
+    const audio = new Audio(fileName);
+    audio.loop = true;
+    audio.volume = startValue;
+    const track = { audio: audio, baseVolume: startValue };
+    tracks.push(track);
+    return track;
+}
+
+const rainTrack    = createTrack("audio/rain.mp3",    0.60); // Rain/Wind
+const thunderTrack = createTrack("audio/thunder.mp3", 1.00); // Thunder
+
+function playAll() 
+{
+    for (let i = 0; i < tracks.length; i++)
+        tracks[i].audio.play();
+}
+
+function stopAll() 
+{
+    for (let i = 0; i < tracks.length; i++)
+        tracks[i].audio.pause();
+}
+
+// lil-gui setup
+
+const GUI = lil.GUI;
+const gui = new GUI();
+gui.title("Audio Controls");
+gui.close();
+
+const audioParams = 
+{
+    masterVolume: 1.00,
+    rainVolume: 0.60,
+    thunderVolume: 1.00,
+    playSound: () => playAll(),
+    stopSound: () => stopAll()
+};
+
+function syncParamsToAudio() 
+{
+    rainTrack.baseVolume   = audioParams.rainVolume;
+    thunderTrack.baseVolume = audioParams.thunderVolume;
+    for (let i = 0; i < tracks.length; i++)
+        tracks[i].audio.volume = tracks[i].baseVolume * audioParams.masterVolume;
+}
+
+// sliders
+gui.add(audioParams, "masterVolume", 0, 1, 0.01)
+    .name("Master Volume")
+    .onChange(syncParamsToAudio);
+gui.add(audioParams, "rainVolume", 0, 1, 0.01)
+    .name("Rain/Wind Volume")
+    .onChange(syncParamsToAudio);
+gui.add(audioParams, "thunderVolume", 0, 1, 0.01)
+    .name("Thunder Volume")
+    .onChange(syncParamsToAudio);
+
+// buttons
+gui.add(audioParams, "playSound").name("Play Audio");
+gui.add(audioParams, "stopSound").name("Stop Audio");
+</script>
+</body>
+</html>
